@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1060232368338",
+    "project_id": "indianguru-36b26",
+    "storage_bucket": "indianguru-36b26.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1060232368338:android:f1fe2d56b75ab5b9781d0b",
+        "android_client_info": {
+          "package_name": "com.example.indian_guru"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1060232368338-ns1b8bmbh62197gjjnec6en1j67sg3bd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvKS_KciQh_GXH_efbmrGAew9UeNhnYcM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1060232368338-ns1b8bmbh62197gjjnec6en1j67sg3bd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1060232368338-2scdqbm99gqs4g75et8jbkafbgensat1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.indianGuru"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
