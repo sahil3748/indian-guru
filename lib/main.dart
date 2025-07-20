@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:indian_guru/classroom_home_page.dart';
 import 'package:indian_guru/firebase_options.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path_provider/path_provider.dart';
 
 void main() async {
@@ -11,8 +12,10 @@ void main() async {
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize path provider
-  await getTemporaryDirectory();
+  // Initialize path provider only for non-web platforms
+  if (!kIsWeb) {
+    await getTemporaryDirectory();
+  }
 
   runApp(MyApp());
 }

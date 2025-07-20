@@ -73,10 +73,20 @@ class AuthService {
         print('📧 Account email: ${signedInAccount.email}');
         print('👤 Account display name: ${signedInAccount.displayName}');
 
-        // Get authentication
-        final googleAuth = await signedInAccount.authentication;
-        print('🔑 Access token obtained: ${googleAuth.accessToken != null}');
-        print('🔑 ID token obtained: ${googleAuth.idToken != null}');
+        try {
+          // Get authentication
+          final googleAuth = await signedInAccount.authentication;
+          print('🔑 Access token obtained: ${googleAuth.accessToken != null}');
+          print('🔑 ID token obtained: ${googleAuth.idToken != null}');
+        } catch (authError) {
+          print('❌ Authentication error: $authError');
+          if (authError.toString().contains('people.googleapis.com')) {
+            throw Exception(
+              'People API is not enabled. Please enable it in the Google Cloud Console.',
+            );
+          }
+          rethrow;
+        }
       } else {
         print('❌ Sign-in cancelled or failed');
       }
@@ -84,7 +94,7 @@ class AuthService {
       return signedInAccount;
     } catch (error) {
       print('❌ Error signing in with Google: $error');
-      return null;
+      rethrow; // Rethrow the error so it can be handled by the UI
     }
   }
 

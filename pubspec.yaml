@@ -43,9 +43,13 @@ dependencies:
   extension_google_sign_in_as_googleapis_auth: ^2.0.12
   url_launcher: ^6.2.5
   webview_flutter: ^4.7.0
-  flutter_pdfview: ^1.3.2
+  # Replacing flutter_pdfview with syncfusion_flutter_pdfviewer for web support
+  syncfusion_flutter_pdfviewer: ^24.2.9
   path_provider: ^2.1.2
   dio: ^5.4.1
+  # Using universal_html for web-compatible features
+  universal_html: ^2.2.4
+  # permission_handler with web support
   permission_handler: ^11.3.0
 
 dev_dependencies:

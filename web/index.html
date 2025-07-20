@@ -31,8 +31,36 @@
 
   <title>indian_guru</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Google Sign-in -->
+  <meta name="google-signin-client_id" content="1060232368338-ns1b8bmbh62197gjjnec6en1j67sg3bd.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <!-- Firebase Configuration -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcN7t3IXL6qILpyifsnSfRAcJWKehsZDw",
+      authDomain: "indianguru-36b26.firebaseapp.com",
+      projectId: "indianguru-36b26",
+      storageBucket: "indianguru-36b26.firebasestorage.app",
+      messagingSenderId: "1060232368338",
+      appId: "1:1060232368338:web:5c8182fc90d10726781d0b",
+      measurementId: "G-L7VMQNDRKT"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+  </script>
+
+  <script src="main.dart.js" type="application/javascript"></script>
 </body>
 </html>

@@ -42,18 +42,6 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
 
       if (account != null) {
         print('✅ Google Sign-In successful');
-        print('📧 Signed in as: ${account.email}');
-
-        print('🔄 Signing in to Firebase...');
-        final firebaseResult = await _firebaseAuthService.signInWithFirebase(
-          account,
-        );
-        print(
-          firebaseResult != null
-              ? '✅ Firebase Sign-In successful'
-              : '❌ Firebase Sign-In failed',
-        );
-
         print('🔄 Getting Classroom API access...');
         final api = await _classroomService.getClassroomApi(
           _authService.googleSignIn,
@@ -74,15 +62,28 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
           print('📚 Total courses loaded: ${courses?.length ?? 0}');
         } else {
           print('❌ Failed to get Classroom API access');
+          _showError(
+            'Failed to access Google Classroom. Please check your permissions.',
+          );
         }
       } else {
         print('❌ Google Sign-In failed or was cancelled');
       }
     } catch (e) {
       print('❌ Error during sign-in process: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error signing in: $e')));
+      String errorMessage = 'Error signing in';
+
+      if (e.toString().contains('People API is not enabled')) {
+        errorMessage =
+            'Please enable the People API in Google Cloud Console to use this app.';
+      } else if (e.toString().contains('classroom.googleapis.com')) {
+        errorMessage =
+            'Please enable the Google Classroom API in Google Cloud Console.';
+      } else if (e.toString().contains('popup_closed_by_user')) {
+        errorMessage = 'Sign-in cancelled. Please try again.';
+      }
+
+      _showError(errorMessage);
     } finally {
       setState(() {
         _isLoading = false;
@@ -200,6 +201,25 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
         ),
       ),
     );
+  }
+
+  void _showError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'OK',
+            textColor: Colors.white,
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            },
+          ),
+        ),
+      );
+    }
   }
 
   @override

@@ -1,9 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:dio/dio.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PDFViewerPage extends StatefulWidget {
@@ -17,78 +13,29 @@ class PDFViewerPage extends StatefulWidget {
 }
 
 class _PDFViewerPageState extends State<PDFViewerPage> {
-  String? localPath;
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
-  int _totalPages = 0;
-  int _currentPage = 0;
-  PDFViewController? _pdfViewController;
+  late PdfViewerController _pdfViewerController;
 
   @override
   void initState() {
     super.initState();
-    _downloadAndOpenPDF();
+    _pdfViewerController = PdfViewerController();
+    _initializePdfViewer();
   }
 
-  Future<void> _downloadAndOpenPDF() async {
+  Future<void> _initializePdfViewer() async {
     setState(() {
-      _isLoading = true;
+      _isLoading = false;
       _hasError = false;
       _errorMessage = '';
     });
-
-    try {
-      // Get temporary directory
-      final dir = await getTemporaryDirectory();
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final filePath = '${dir.path}/$fileName';
-
-      // Download file
-      print('🔄 Downloading PDF from: ${widget.url}');
-      final dio = Dio();
-      await dio.download(
-        widget.url,
-        filePath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            print(
-              '📥 Download progress: ${(received / total * 100).toStringAsFixed(0)}%',
-            );
-          }
-        },
-      );
-      print('✅ PDF downloaded successfully');
-
-      if (mounted) {
-        setState(() {
-          localPath = filePath;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('❌ Error downloading PDF: $e');
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-          _errorMessage = e.toString();
-          _isLoading = false;
-        });
-      }
-    }
   }
 
   @override
   void dispose() {
-    // Clean up temporary file
-    if (localPath != null) {
-      try {
-        File(localPath!).deleteSync();
-        print('🗑️ Temporary PDF file deleted');
-      } catch (e) {
-        print('⚠️ Error deleting temporary file: $e');
-      }
-    }
+    _pdfViewerController.dispose();
     super.dispose();
   }
 
@@ -98,44 +45,16 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
-          if (!_isLoading && !_hasError) ...[
-            // Page navigation
-            Row(
-              children: [
-                Text(
-                  'Page: ${_currentPage + 1}/$_totalPages',
-                  style: TextStyle(fontSize: 16),
-                ),
-                IconButton(
-                  icon: Icon(Icons.navigate_before),
-                  onPressed: _currentPage > 0
-                      ? () {
-                          _pdfViewController?.setPage(_currentPage - 1);
-                        }
-                      : null,
-                ),
-                IconButton(
-                  icon: Icon(Icons.navigate_next),
-                  onPressed: _currentPage < _totalPages - 1
-                      ? () {
-                          _pdfViewController?.setPage(_currentPage + 1);
-                        }
-                      : null,
-                ),
-              ],
-            ),
-            // Open in browser button
-            IconButton(
-              icon: Icon(Icons.open_in_browser),
-              onPressed: () {
-                Navigator.pop(context);
-                launchUrl(
-                  Uri.parse(widget.url),
-                  mode: LaunchMode.externalApplication,
-                );
-              },
-            ),
-          ],
+          IconButton(
+            icon: Icon(Icons.open_in_browser),
+            onPressed: () {
+              Navigator.pop(context);
+              launchUrl(
+                Uri.parse(widget.url),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+          ),
         ],
       ),
       body: _buildBody(),
@@ -150,7 +69,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text('Downloading PDF...'),
+            Text('Loading PDF...'),
           ],
         ),
       );
@@ -177,7 +96,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
               ),
               SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _downloadAndOpenPDF,
+                onPressed: _initializePdfViewer,
                 child: Text('Try Again'),
               ),
               SizedBox(height: 12),
@@ -197,43 +116,15 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
       );
     }
 
-    return PDFView(
-      filePath: localPath!,
-      enableSwipe: true,
-      swipeHorizontal: true,
-      autoSpacing: true,
-      pageFling: true,
-      pageSnap: true,
-      defaultPage: 0,
-      fitPolicy: FitPolicy.BOTH,
-      preventLinkNavigation: false,
-      onRender: (pages) {
-        setState(() {
-          _totalPages = pages!;
-        });
-        print('📄 PDF rendered with $pages pages');
-      },
-      onError: (error) {
+    return SfPdfViewer.network(
+      widget.url,
+      controller: _pdfViewerController,
+      onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
         setState(() {
           _hasError = true;
-          _errorMessage = error.toString();
+          _errorMessage = details.error;
         });
-        print('❌ Error rendering PDF: $error');
-      },
-      onPageError: (page, error) {
-        print('❌ Error on page $page: $error');
-      },
-      onViewCreated: (PDFViewController pdfViewController) {
-        setState(() {
-          _pdfViewController = pdfViewController;
-        });
-      },
-      onPageChanged: (int? page, int? total) {
-        if (page != null) {
-          setState(() {
-            _currentPage = page;
-          });
-        }
+        print('❌ Error loading PDF: ${details.error}');
       },
     );
   }
