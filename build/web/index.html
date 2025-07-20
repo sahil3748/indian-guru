@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="indian_guru">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>indian_guru</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Sign-in -->
+  <meta name="google-signin-client_id" content="1060232368338-ns1b8bmbh62197gjjnec6en1j67sg3bd.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body>
+  <!-- Firebase Configuration -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFunctions } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+    import { getMessaging } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
+    import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+    import { getRemoteConfig } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-remote-config.js";
+    import { getPerformance } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-performance.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcN7t3IXL6qILpyifsnSfRAcJWKehsZDw",
+      authDomain: "indianguru-36b26.firebaseapp.com",
+      projectId: "indianguru-36b26",
+      storageBucket: "indianguru-36b26.firebasestorage.app",
+      messagingSenderId: "1060232368338",
+      appId: "1:1060232368338:web:5c8182fc90d10726781d0b",
+      measurementId: "G-L7VMQNDRKT"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    
+    // Initialize Firebase services
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+    const firestore = getFirestore(app);
+    const functions = getFunctions(app);
+    const messaging = getMessaging(app);
+    const storage = getStorage(app);
+    const analytics = getAnalytics(app);
+    const remoteConfig = getRemoteConfig(app);
+    const performance = getPerformance(app);
+  </script>
+
+  <script src="main.dart.js" type="application/javascript"></script>
+</body>
+</html>
