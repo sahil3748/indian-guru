@@ -54,4 +54,102 @@ class ClassroomService {
       return null;
     }
   }
+
+  // Fetch course announcements (Stream)
+  Future<List<Announcement>?> listAnnouncements(
+    ClassroomApi classroomApi,
+    String courseId,
+  ) async {
+    print('🔄 Fetching announcements for course: $courseId');
+    try {
+      final announcements = await classroomApi.courses.announcements.list(
+        courseId,
+      );
+      print(
+        '✅ Successfully fetched ${announcements.announcements?.length ?? 0} announcements',
+      );
+      return announcements.announcements?.toList();
+    } catch (error) {
+      print('❌ Error listing announcements: $error');
+      return null;
+    }
+  }
+
+  // Fetch course work
+  Future<List<CourseWork>?> listCourseWork(
+    ClassroomApi classroomApi,
+    String courseId,
+  ) async {
+    print('🔄 Fetching coursework for course: $courseId');
+    try {
+      final courseWork = await classroomApi.courses.courseWork.list(courseId);
+      print(
+        '✅ Successfully fetched ${courseWork.courseWork?.length ?? 0} coursework items',
+      );
+      return courseWork.courseWork?.toList();
+    } catch (error) {
+      print('❌ Error listing coursework: $error');
+      return null;
+    }
+  }
+
+  // Fetch course students and teachers
+  Future<Map<String, List<Student>>?> listPeople(
+    ClassroomApi classroomApi,
+    String courseId,
+  ) async {
+    print('🔄 Fetching people for course: $courseId');
+    try {
+      final students = await classroomApi.courses.students.list(courseId);
+      final teachers = await classroomApi.courses.teachers.list(courseId);
+
+      print(
+        '✅ Successfully fetched ${students.students?.length ?? 0} students and ${teachers.teachers?.length ?? 0} teachers',
+      );
+
+      return {
+        'students': students.students?.toList() ?? [],
+        'teachers':
+            teachers.teachers
+                ?.map(
+                  (t) => Student(
+                    userId: t.userId,
+                    profile: UserProfile(
+                      name: t.profile?.name,
+                      emailAddress: t.profile?.emailAddress,
+                      photoUrl: t.profile?.photoUrl,
+                    ),
+                  ),
+                )
+                .toList() ??
+            [],
+      };
+    } catch (error) {
+      print('❌ Error listing people: $error');
+      return null;
+    }
+  }
+
+  // Fetch student submissions for a coursework
+  Future<List<StudentSubmission>?> listSubmissions(
+    ClassroomApi classroomApi,
+    String courseId,
+    String courseWorkId,
+  ) async {
+    print('🔄 Fetching submissions for coursework: $courseWorkId');
+    try {
+      final submissions = await classroomApi
+          .courses
+          .courseWork
+          .studentSubmissions
+          .list(courseId, courseWorkId);
+      print(
+        '✅ Successfully fetched ${submissions.studentSubmissions?.length ?? 0} submissions',
+      );
+      return submissions.studentSubmissions?.toList();
+    } catch (error) {
+      print('❌ Error listing submissions: $error');
+      return null;
+    }
+  }
 }

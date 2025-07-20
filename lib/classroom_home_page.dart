@@ -3,6 +3,7 @@ import 'package:googleapis/classroom/v1.dart';
 import 'auth_service.dart';
 import 'firebase_auth_service.dart';
 import 'classroom_service.dart';
+import 'course_detail_page.dart';
 
 class ClassroomHomePage extends StatefulWidget {
   @override
@@ -153,16 +154,22 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
                   child: ListTile(
                     title: Text(course.name ?? 'Unnamed Course'),
                     subtitle: Text(course.section ?? ''),
-                    trailing: Text(course.courseState ?? ''),
+                    // trailing: Text(course.courseState ?? ''),
                     onTap: () {
-                      print('\n📚 Course tapped:');
-                      print('   Name: ${course.name}');
-                      print('   ID: ${course.id}');
-                      print('   Section: ${course.section ?? 'N/A'}');
-                      print('   State: ${course.courseState ?? 'N/A'}\n');
+                      // print('\n📚 Course tapped:');
+                      // print('   Name: ${course.name}');
+                      // print('   ID: ${course.id}');
+                      // print('   Section: ${course.section ?? 'N/A'}');
+                      // print('   State: ${course.courseState ?? 'N/A'}\n');
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Course ID: ${course.id}')),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CourseDetailPage(
+                            course: course,
+                            classroomApi: _classroomApi!,
+                          ),
+                        ),
                       );
                     },
                   ),

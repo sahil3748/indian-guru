@@ -5,10 +5,44 @@ class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
       'email',
-      'https://www.googleapis.com/auth/classroom.courses.readonly',
+      // Course management
       'https://www.googleapis.com/auth/classroom.courses',
+      'https://www.googleapis.com/auth/classroom.courses.readonly',
+
+      // Roster management
+      'https://www.googleapis.com/auth/classroom.rosters',
       'https://www.googleapis.com/auth/classroom.rosters.readonly',
       'https://www.googleapis.com/auth/classroom.profile.emails',
+      'https://www.googleapis.com/auth/classroom.profile.photos',
+
+      // Announcements
+      'https://www.googleapis.com/auth/classroom.announcements',
+      'https://www.googleapis.com/auth/classroom.announcements.readonly',
+
+      // Coursework (including quizzes)
+      'https://www.googleapis.com/auth/classroom.coursework.students',
+      'https://www.googleapis.com/auth/classroom.coursework.students.readonly',
+      'https://www.googleapis.com/auth/classroom.coursework.me',
+      'https://www.googleapis.com/auth/classroom.coursework.me.readonly',
+
+      // Topics
+      'https://www.googleapis.com/auth/classroom.topics',
+      'https://www.googleapis.com/auth/classroom.topics.readonly',
+
+      // Student submissions
+      'https://www.googleapis.com/auth/classroom.student-submissions.students.readonly',
+      'https://www.googleapis.com/auth/classroom.student-submissions.me.readonly',
+
+      // Guardian access
+      'https://www.googleapis.com/auth/classroom.guardianlinks.students',
+      'https://www.googleapis.com/auth/classroom.guardianlinks.me.readonly',
+
+      // Push notifications
+      'https://www.googleapis.com/auth/classroom.push-notifications',
+
+      // Drive access for classroom materials
+      'https://www.googleapis.com/auth/drive.readonly',
+      'https://www.googleapis.com/auth/drive.file',
     ],
     // Only provide clientId on web platform
     clientId: kIsWeb
