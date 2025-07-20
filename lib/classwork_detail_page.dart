@@ -20,23 +20,36 @@ class ClassworkDetailPage extends StatefulWidget {
   _ClassworkDetailPageState createState() => _ClassworkDetailPageState();
 }
 
-class _ClassworkDetailPageState extends State<ClassworkDetailPage> {
+class _ClassworkDetailPageState extends State<ClassworkDetailPage>
+    with SingleTickerProviderStateMixin {
   final ClassroomService _classroomService = ClassroomService();
   bool _isLoading = false;
   List<classroom.Material>? _materials;
   classroom.StudentSubmission? _mySubmission;
+  late TabController _tabController;
+  int _selectedTab = 1; // Default to Student Work tab
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: _selectedTab,
+    );
     _loadClassworkDetails();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadClassworkDetails() async {
     setState(() => _isLoading = true);
 
     try {
-      // Get student submission if available
       final submissions = await _classroomService.listSubmissions(
         widget.classroomApi,
         widget.courseId,
@@ -184,136 +197,191 @@ class _ClassworkDetailPageState extends State<ClassworkDetailPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPointsPill() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.edit_outlined, size: 18),
+          SizedBox(width: 4),
+          Text(
+            '${widget.courseWork.maxPoints ?? 0} points',
+            style: TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmissionStatus() {
+    final turnedIn = _mySubmission?.state == 'TURNED_IN' ? 1 : 0;
+    final assigned = 1; // Assuming 1 student is assigned
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey[800]!)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Column(
+            children: [
+              Text(
+                '$turnedIn',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              Text('Turned in'),
+            ],
+          ),
+          Container(height: 40, width: 1, color: Colors.grey[800]),
+          Column(
+            children: [
+              Text(
+                '$assigned',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              Text('Assigned'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeadline() {
     final dueDate = widget.courseWork.dueDate;
     final dueTime = widget.courseWork.dueTime;
-    String? dueDateStr;
+    if (dueDate == null) return SizedBox.shrink();
 
-    if (dueDate != null) {
-      dueDateStr = 'Due: ${dueDate.month}/${dueDate.day}/${dueDate.year}';
-      if (dueTime != null) {
-        dueDateStr +=
-            ' at ${dueTime.hours}:${dueTime.minutes.toString().padLeft(2, '0')}';
-      }
-    }
+    final deadline = DateTime(
+      dueDate.year ?? 2025,
+      dueDate.month ?? 1,
+      dueDate.day ?? 1,
+      dueTime?.hours ?? 23,
+      dueTime?.minutes ?? 59,
+    );
 
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Text(
+            'Submissions will close ${deadline.month}/${deadline.day}/${deadline.year}, '
+            '${(dueTime?.hours ?? 23).toString().padLeft(2, '0')}:'
+            '${(dueTime?.minutes ?? 59).toString().padLeft(2, '0')} PM',
+            style: TextStyle(fontSize: 16),
+          ),
+          Spacer(),
+          Icon(Icons.edit_outlined),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudentList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.blue[100],
+            child: Icon(Icons.people, color: Colors.blue),
+          ),
+          title: Text('All students'),
+          trailing: Checkbox(value: false, onChanged: (value) {}),
+        ),
+        ListTile(title: Text('ASSIGNED'), dense: true),
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.green,
+            child: Text('I'),
+          ),
+          title: Text('Ishika Chudasama'),
+          trailing: Text('Assigned'),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.courseWork.title ?? 'Assignment Details'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: _buildPointsPill(),
         actions: [
-          if (widget.courseWork.alternateLink != null)
-            IconButton(
-              icon: Icon(Icons.open_in_browser),
-              onPressed: () async {
-                final url = widget.courseWork.alternateLink!;
-                if (await canLaunchUrl(Uri.parse(url))) {
-                  await launchUrl(Uri.parse(url));
-                }
-              },
-            ),
+          IconButton(icon: Icon(Icons.share), onPressed: () {}),
+          IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title and type
-                  Text(
-                    widget.courseWork.title ?? 'Untitled Assignment',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    widget.courseWork.workType ?? 'Assignment',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
-                  ),
-
-                  // Due date
-                  if (dueDateStr != null) ...[
-                    SizedBox(height: 16),
-                    Text(
-                      dueDateStr,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleMedium?.copyWith(color: Colors.red),
-                    ),
+          : Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  tabs: [
+                    Tab(text: 'Instructions'),
+                    Tab(text: 'Student Work'),
                   ],
-
-                  // Points
-                  if (widget.courseWork.maxPoints != null) ...[
-                    SizedBox(height: 8),
-                    Text(
-                      'Points: ${widget.courseWork.maxPoints}',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ],
-
-                  // Description
-                  if (widget.courseWork.description != null) ...[
-                    SizedBox(height: 24),
-                    Text(
-                      'Instructions',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    SizedBox(height: 8),
-                    Text(widget.courseWork.description!),
-                  ],
-
-                  // Materials
-                  if (_materials != null && _materials!.isNotEmpty) ...[
-                    SizedBox(height: 24),
-                    Text(
-                      'Materials',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    SizedBox(height: 8),
-                    Card(
-                      child: Column(
-                        children: _materials!
-                            .map((material) => _buildMaterialItem(material))
-                            .toList(),
-                      ),
-                    ),
-                  ],
-
-                  // Submission status
-                  if (_mySubmission != null) ...[
-                    SizedBox(height: 24),
-                    Text(
-                      'Your Submission',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    SizedBox(height: 8),
-                    Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Status: ${_mySubmission!.state ?? 'Not submitted'}',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            if (_mySubmission!.assignedGrade != null) ...[
-                              SizedBox(height: 8),
-                              Text(
-                                'Grade: ${_mySubmission!.assignedGrade}/${widget.courseWork.maxPoints ?? 'N/A'}',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
+                ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // Instructions Tab
+                      SingleChildScrollView(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (widget.courseWork.description != null)
+                                Text(widget.courseWork.description!),
+                              if (_materials != null &&
+                                  _materials!.isNotEmpty) ...[
+                                SizedBox(height: 24),
+                                Text(
+                                  'Attachments',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount: _materials!.length,
+                                  itemBuilder: (context, index) =>
+                                      _buildMaterialItem(_materials![index]),
+                                ),
+                              ],
                             ],
+                          ),
+                        ),
+                      ),
+                      // Student Work Tab
+                      SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _buildSubmissionStatus(),
+                            _buildDeadline(),
+                            _buildStudentList(),
                           ],
                         ),
                       ),
-                    ),
-                  ],
-                ],
-              ),
+                    ],
+                  ),
+                ),
+              ],
             ),
     );
   }
