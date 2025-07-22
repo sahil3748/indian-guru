@@ -1,5 +1,6 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'user_preferences_service.dart';
 
 class AuthService {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -30,7 +31,9 @@ class AuthService {
       'https://www.googleapis.com/auth/classroom.topics.readonly',
 
       // Student submissions
+      'https://www.googleapis.com/auth/classroom.student-submissions.students',
       'https://www.googleapis.com/auth/classroom.student-submissions.students.readonly',
+      'https://www.googleapis.com/auth/classroom.student-submissions.me',
       'https://www.googleapis.com/auth/classroom.student-submissions.me.readonly',
 
       // Guardian access
@@ -43,12 +46,16 @@ class AuthService {
       // Drive access for classroom materials
       'https://www.googleapis.com/auth/drive.readonly',
       'https://www.googleapis.com/auth/drive.file',
+      // Full Drive access (optional, requires additional verification)
+      'https://www.googleapis.com/auth/drive',
     ],
     // Only provide clientId on web platform
     clientId: kIsWeb
         ? '1060232368338-ns1b8bmbh62197gjjnec6en1j67sg3bd.apps.googleusercontent.com'
         : null,
   );
+
+  final UserPreferencesService _prefsService = UserPreferencesService();
 
   GoogleSignIn get googleSignIn => _googleSignIn;
 
@@ -62,6 +69,7 @@ class AuthService {
       final silentSignIn = await _googleSignIn.signInSilently();
       if (silentSignIn != null) {
         print('✅ Silent sign-in successful');
+        await _prefsService.saveUserLoginDetails(silentSignIn);
         return silentSignIn;
       }
 
@@ -77,6 +85,9 @@ class AuthService {
         final googleAuth = await signedInAccount.authentication;
         print('🔑 Access token obtained: ${googleAuth.accessToken != null}');
         print('🔑 ID token obtained: ${googleAuth.idToken != null}');
+
+        // Save user details to SharedPreferences
+        await _prefsService.saveUserLoginDetails(signedInAccount);
       } else {
         print('❌ Sign-in cancelled or failed');
       }
@@ -91,9 +102,18 @@ class AuthService {
   Future<void> signOut() async {
     try {
       await _googleSignIn.signOut();
+      await _prefsService.clearUserLoginDetails();
       print('✅ Successfully signed out from Google');
     } catch (error) {
       print('❌ Error signing out: $error');
     }
+  }
+
+  Future<bool> isSignedIn() async {
+    return await _prefsService.isUserLoggedIn();
+  }
+
+  Future<Map<String, String>> getUserDetails() async {
+    return await _prefsService.getUserDetails();
   }
 }

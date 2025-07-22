@@ -20,6 +20,7 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
   List<Course>? _courses;
   ClassroomApi? _classroomApi;
   int _selectedIndex = 0;
+  Map<String, String>? _userDetails;
 
   final List<Color> _courseColors = [
     Color(0xFFE91E63), // Pink
@@ -28,6 +29,28 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
     Color(0xFFFFC107), // Amber
     Color(0xFF9C27B0), // Purple
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginState();
+  }
+
+  Future<void> _checkLoginState() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final isLoggedIn = await _authService.isSignedIn();
+      if (isLoggedIn) {
+        print('📱 Found saved login state, attempting auto-login...');
+        await _signIn();
+      }
+    } catch (e) {
+      print('❌ Error checking login state: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
 
   Future<void> _signIn() async {
     print('\n🔐 Starting sign-in process...');
@@ -64,11 +87,13 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
           print('✅ Successfully got Classroom API access');
           print('🔄 Fetching courses...');
           final courses = await _classroomService.listCourses(api);
+          final userDetails = await _authService.getUserDetails();
 
           setState(() {
             _classroomApi = api;
             _courses = courses;
             _isSignedIn = true;
+            _userDetails = userDetails;
           });
           print('✅ State updated with courses and sign-in status');
           print('📚 Total courses loaded: ${courses?.length ?? 0}');
@@ -108,10 +133,11 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
         _isSignedIn = false;
         _courses = null;
         _classroomApi = null;
+        _userDetails = null;
       });
       print('✅ Cleared all session data');
     } catch (e) {
-      print('❌ Error during sign-out process: $e');
+      print('❌ Error during sign-out: $e');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error signing out: $e')));
@@ -148,34 +174,19 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
               decoration: BoxDecoration(
                 color: color,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
                 ),
               ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    right: 16,
-                    bottom: 16,
-                    child: Icon(
-                      Icons.class_,
-                      color: Colors.white.withOpacity(0.5),
-                      size: 48,
-                    ),
+              child: Center(
+                child: Text(
+                  course.name?.substring(0, 1) ?? 'C',
+                  style: TextStyle(
+                    fontSize: 40,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
-                  Positioned(
-                    left: 16,
-                    bottom: 16,
-                    child: Text(
-                      course.name ?? 'Unnamed Course',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             Padding(
@@ -183,16 +194,15 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    course.name ?? 'Untitled Course',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   if (course.section != null)
                     Text(
                       course.section!,
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
-                  SizedBox(height: 8),
-                  Text(
-                    course.descriptionHeading ?? '',
-                    style: TextStyle(fontSize: 14),
-                  ),
                 ],
               ),
             ),
@@ -210,7 +220,42 @@ class _ClassroomHomePageState extends State<ClassroomHomePage> {
         actions: [
           if (_isSignedIn) ...[
             IconButton(icon: Icon(Icons.grid_view), onPressed: () {}),
-            IconButton(icon: Icon(Icons.account_circle), onPressed: _signOut),
+            PopupMenuButton<String>(
+              icon: CircleAvatar(
+                backgroundImage:
+                    _userDetails?['photoUrl'] != null &&
+                        _userDetails!['photoUrl']!.isNotEmpty
+                    ? NetworkImage(_userDetails!['photoUrl']!)
+                    : null,
+                child:
+                    _userDetails?['photoUrl'] == null ||
+                        _userDetails!['photoUrl']!.isEmpty
+                    ? Icon(Icons.person)
+                    : null,
+              ),
+              onSelected: (value) {
+                if (value == 'signOut') {
+                  _signOut();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'profile',
+                  child: ListTile(
+                    leading: Icon(Icons.account_circle),
+                    title: Text(_userDetails?['displayName'] ?? 'User'),
+                    subtitle: Text(_userDetails?['email'] ?? ''),
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'signOut',
+                  child: ListTile(
+                    leading: Icon(Icons.logout),
+                    title: Text('Sign Out'),
+                  ),
+                ),
+              ],
+            ),
           ],
         ],
       ),

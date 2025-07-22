@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:indian_guru/auth_service.dart';
 import 'package:indian_guru/classroom_home_page.dart';
+import 'package:indian_guru/classroom_service.dart';
 import 'package:indian_guru/firebase_options.dart';
 import 'package:path_provider/path_provider.dart';
 

@@ -152,4 +152,196 @@ class ClassroomService {
       return null;
     }
   }
+
+  // Create a new class
+  Future<Course?> createCourse(ClassroomApi classroomApi, Course course) async {
+    print('🔄 Creating new course: ${course.name}');
+    try {
+      final createdCourse = await classroomApi.courses.create(course);
+      print(
+        '✅ Successfully created course: ${createdCourse.name} (ID: ${createdCourse.id})',
+      );
+      return createdCourse;
+    } catch (error) {
+      print('❌ Error creating course: $error');
+      return null;
+    }
+  }
+
+  // Update an existing class
+  Future<Course?> updateCourse(
+    ClassroomApi classroomApi,
+    String courseId,
+    Course course,
+  ) async {
+    print('🔄 Updating course: $courseId');
+    try {
+      final updatedCourse = await classroomApi.courses.update(course, courseId);
+      print('✅ Successfully updated course: ${updatedCourse.name}');
+      return updatedCourse;
+    } catch (error) {
+      print('❌ Error updating course: $error');
+      return null;
+    }
+  }
+
+  // Create a new announcement
+  Future<Announcement?> createAnnouncement(
+    ClassroomApi classroomApi,
+    String courseId,
+    Announcement announcement,
+  ) async {
+    print('🔄 Creating announcement for course: $courseId');
+    try {
+      final createdAnnouncement = await classroomApi.courses.announcements
+          .create(announcement, courseId);
+      print('✅ Successfully created announcement');
+      return createdAnnouncement;
+    } catch (error) {
+      print('❌ Error creating announcement: $error');
+      return null;
+    }
+  }
+
+  // Create a new assignment
+  Future<CourseWork?> createAssignment(
+    ClassroomApi classroomApi,
+    String courseId,
+    CourseWork assignment,
+  ) async {
+    print('🔄 Creating assignment for course: $courseId');
+    try {
+      final createdAssignment = await classroomApi.courses.courseWork.create(
+        assignment,
+        courseId,
+      );
+      print('✅ Successfully created assignment: ${createdAssignment.title}');
+      return createdAssignment;
+    } catch (error) {
+      print('❌ Error creating assignment: $error');
+      return null;
+    }
+  }
+
+  // Create a new topic
+  Future<Topic?> createTopic(
+    ClassroomApi classroomApi,
+    String courseId,
+    Topic topic,
+  ) async {
+    print('🔄 Creating topic for course: $courseId');
+    try {
+      final createdTopic = await classroomApi.courses.topics.create(
+        topic,
+        courseId,
+      );
+      print('✅ Successfully created topic: ${createdTopic.name}');
+      return createdTopic;
+    } catch (error) {
+      print('❌ Error creating topic: $error');
+      return null;
+    }
+  }
+
+  // Add a teacher to a course
+  Future<Teacher?> addTeacher(
+    ClassroomApi classroomApi,
+    String courseId,
+    String teacherEmail,
+  ) async {
+    print('🔄 Adding teacher to course: $courseId');
+    try {
+      final teacher = Teacher(userId: teacherEmail);
+      final addedTeacher = await classroomApi.courses.teachers.create(
+        teacher,
+        courseId,
+      );
+      print('✅ Successfully added teacher: ${addedTeacher.profile?.name}');
+      return addedTeacher;
+    } catch (error) {
+      print('❌ Error adding teacher: $error');
+      return null;
+    }
+  }
+
+  // Add a student to a course
+  Future<Student?> addStudent(
+    ClassroomApi classroomApi,
+    String courseId,
+    String studentEmail,
+  ) async {
+    print('🔄 Adding student to course: $courseId');
+    try {
+      final student = Student(userId: studentEmail);
+      final addedStudent = await classroomApi.courses.students.create(
+        student,
+        courseId,
+      );
+      print('✅ Successfully added student: ${addedStudent.profile?.name}');
+      return addedStudent;
+    } catch (error) {
+      print('❌ Error adding student: $error');
+      return null;
+    }
+  }
+
+  // Create a material
+  Future<CourseWork?> createMaterial(
+    ClassroomApi classroomApi,
+    String courseId,
+    CourseWork material,
+  ) async {
+    print('🔄 Creating material for course: $courseId');
+    try {
+      // Ensure workType is set to MATERIAL
+      material.workType = 'MATERIAL';
+      final createdMaterial = await classroomApi.courses.courseWork.create(
+        material,
+        courseId,
+      );
+      print('✅ Successfully created material: ${createdMaterial.title}');
+      return createdMaterial;
+    } catch (error) {
+      print('❌ Error creating material: $error');
+      return null;
+    }
+  }
+
+  // Create a question
+  Future<CourseWork?> createQuestion(
+    ClassroomApi classroomApi,
+    String courseId,
+    CourseWork question,
+  ) async {
+    print('🔄 Creating question for course: $courseId');
+    try {
+      // Ensure workType is set to ASSIGNMENT
+      question.workType = 'ASSIGNMENT';
+      final createdQuestion = await classroomApi.courses.courseWork.create(
+        question,
+        courseId,
+      );
+      print('✅ Successfully created question: ${createdQuestion.title}');
+      return createdQuestion;
+    } catch (error) {
+      print('❌ Error creating question: $error');
+      return null;
+    }
+  }
+
+  // Get course invite code
+  Future<String?> getCourseInviteCode(
+    ClassroomApi classroomApi,
+    String courseId,
+  ) async {
+    print('🔄 Fetching invite code for course: $courseId');
+    try {
+      final course = await classroomApi.courses.get(courseId);
+      print('✅ Successfully fetched invite code: ${course.enrollmentCode}');
+      return course.enrollmentCode;
+    } catch (error) {
+      print('❌ Error fetching invite code: $error');
+      return null;
+    }
+  }
 }
